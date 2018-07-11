@@ -1,6 +1,6 @@
 {
   "name": "apostrophe",
-  "version": "2.60.0",
+  "version": "2.60.1",
   "description": "The Apostrophe Content Management System.",
   "main": "index.js",
   "scripts": {
@@ -26,6 +26,7 @@
     "@sailshq/lodash": "^3.10.3",
     "async": "^1.5.2",
     "bless": "^3.0.3",
+    "bluebird": "^3.5.1",
     "body-parser": "^1.18.2",
     "broadband": "^1.0.0",
     "cheerio": "^0.22.0",
