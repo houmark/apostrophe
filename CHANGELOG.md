@@ -1,5 +1,92 @@
 # Changelog
 
+## 2.68.1
+
+Unit tests passing.
+
+Regression tests passing.
+
+* When we introduced allowedSubpageTypes and allowedHomepageTypes in 2.67.0, we  broke support for different schemas in different page types. Those regressions are fixed here.
+* The default page type choice offered for a new page is the first type permitted by its parent page.
+
+## 2.68.0
+
+Unit tests passing.
+
+Regression tests passing.
+
+* The `lateCriteria` cursor filter now works properly, allowing special mongodb criteria that are not allowed inside `$and` to be merged into the criteria object at the last minute.
+* A noisy warning produced on every page send by the latest version of Bluebird has been silenced.
+* Performance: explicitly shut off `sort()` for certain cases where we know only one document will be returned. This allows MongoDB to select a more efficient index more often.
+* `nlbr` Nunjucks filter no longer results in double-escaped markup. Thanks to Ulf Seltmann.
+* The `apostrophe-global` module now supports the `separateWhileBusyMiddleware` option. Iby separate middleware that checks for the lock flag in apostrophe-global even if the regular middleware of this method has been disabled and/or overridden to cache in such a way as to make it unsuitable for this purpose. For normal use this option is not necessary.
+* Fixes made to further reduce conflicts between sites with `apostrophe-multisite`. For instance, the `apostrophe-workflow` module no longer breaks the dashboard.
+* The home page can now be copied. If you copy the home page, you get a new child of the home page with the same content. Thanks to Tim Otlik.
+
+## 2.67.0
+
+Unit tests passing.
+
+Regression tests passing.
+
+* Pages can now be locked down with the `allowedHomepageTypes` and `allowedSubpageTypes` options, like this:
+
+```javascript
+// Only one type allowed for the home page
+allowedHomepageTypes: [ 'home' ],
+
+allowedSubpageTypes: {
+  // Two subpage types allowed for the home page
+  'home': [ 'default', 'apostrophe-blog-page' ],
+  // No subpages for the blog page ("show pages" don't count)
+  'apostrophe-blog-page': [],
+  // default page type can only have another default page as a subpage
+  'default': [ 'default' ]
+}
+```
+
+These options make it easy to prevent users from creating unintended scenarios, like nesting pages too deeply for your navigation design.
+
+* Pages now support batch operations, just like pieces do. The initial set includes trash, rescue, publish, unpublish, tag and untag. You can only rescue pages in this way if you are using the `trashInSchema` option of the docs module, which is always the case with `apostrophe-workflow`. With the conventional trash can, it is unclear what should happen because you have not indicated where you want each page to be restored. New batch operations for pages can be added in the same way that they are added for pieces.
+
+* Important performance fix needed for those using the `apostrophe-pieces-orderings-bundle` module to create custom sort orders for pieces. Without this fix it is also possible to get a loader error and stop fetching content prematurely.
+
+* The "revert" button for versions is now labeled "Revert to" to emphasize that it reverts to what you had at the end of that operation, not its beginning. Thanks to Fredrik Ekelund.
+
+## 2.66.0
+
+* Updated to CKEditor version 4.10.0. The CKEditor build now includes the CKEditor "widgets" feature (not to be confused with Apostrophe widgets). These are essential for modules like the forthcoming `apostrophe-rich-text-merge-tags`.
+* `apos.areas.richText` and `apos.areas.plaintext` no longer produce duplicate text. To achieve this, the `apos.docs.walk` method no longer walks through the `_originalWidgets` property. This property is only used to preserve the previous versions of widgets that the user lacks permission to edit due to schema field permissions. Exploration of this property by `apos.docs.walk` led to the observed bug.
+* The browser-side implementation of `apos.utils.escapeHtml` now works properly.
+
+## 2.65.0
+
+Unit tests passing.
+
+Regression tests passing.
+
+* **Important fix for MongoDB replica sets:** previously we used the `autoReconnect` option of the MongoDB driver by default. From now on, we use it only if the MongoDB URI does not refer to a replica set. The use of `autoReconnect` is [inappropriate with a replica set](https://github.com/apostrophecms/apostrophe/issues/1508) because it will keep trying to connect to the node that went down. Leaving this option out results in automatic use of nodes that are up. Also see the [apostrophe-db-mongo-3-driver](https://npmjs.org/package/apostrophe-db-mongo-3-driver) module for a way to use the newer `mongodb+srv` URIs. Thanks to Matt Broadstone of MongoDB for his advice.
+
+* An `apostrophe-file` now has a default URL. The default `_url` property of an `apostrophe-file` piece is simply the URL of the file itself. This allows `apostrophe-file` to be included in your configuration for [apostrophe-permalinks](https://npmjs.org/package/apostrophe-permalinks); picking a PDF in this way generates a direct link to the PDF, which is what the user expects. Note that if the developer elects to set up an `apostrophe-files-pages` module that extends `apostrophe-pieces-pages`, that will still take precedence, so there is no bc break.
+
+* Clicking directly from one rich text widget into another did not work properly; the toolbar did not appear in this situation. This bug has been fixed. The bug only occurred when clicking in a second rich text widget without any intervening clicks outside of all rich text widgets.
+
+* Also see expanded notes on version `2.64.1`, below, which contained several features missed in the original changelog.
+
+## 2.64.1
+
+Unit tests passing.
+
+Regression tests passing.
+
+* Improved Apostrophe's ability to redisplay the appropriate widget, array element, and field and call the user's attention to it when a schema field error is not detected until server-side validation takes place. This addresses problems that come up when fields become `required` at a later time, and/or data was originally created with an earlier release of Apostrophe that did not enforce `required` in all situations. Browser-side validation is still preferred for ease of use but server-side validation no longer creates situations the user cannot easily resolve.
+
+* Introduced the `apos.global.whileBusy` method. This method accepts a function to be run *while no one is permitted to access the site.* The provided function may return a promise, and that promise resolves before the site becomes accessible again. In the presence of `apostrophe-workflow` it is possible to mark only one locale as busy.
+
+* By default, the `apos.locks.lock` method waits until the lock is available before proceeding. However there is now a `wait` option which can be set to `false` to avoid waiting at all, or to any number of milliseconds. If the method fails because of `wait`, the error is the string `locked`.
+
+* The `apos.locks.lock` method also now accepts a `waitForSelf` option. By default, if the same process invokes `apos.locks.lock` for the same lock in two requests simultaneously, one of the two will receive an error. With `waitForSelf`, the second invocation will wait for the first to resolve and then obtain the lock.
+
 ## 2.64.0
 
 Unit tests passing.
